@@ -1,0 +1,3 @@
+1.创建训练数据 python step2_build_dataset.py
+2.训练  python step3_lora_train.py --num_epochs 1
+3.推理 python step5_submit_inference.py --lora_path ./checkpoints/lora-cantonese --gpu --cooldown 2

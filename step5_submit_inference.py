@@ -4,12 +4,14 @@ CPU default, --gpu to use GPU (with cooldown).
 """
 import argparse, json, os, time, torch, librosa
 from transformers import AutoProcessor, AutoModelForSpeechSeq2Seq
+from peft import PeftModel
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--gpu", action="store_true", help="Use GPU (default: CPU)")
     parser.add_argument("--model_path", default="./whisper-small")
+    parser.add_argument("--lora_path", default=None, help="LoRA checkpoint path")
     parser.add_argument("--input_jsonl", default="./repo_files/template.jsonl")
     parser.add_argument("--output_jsonl", default="./outputs/submission.jsonl")
     parser.add_argument("--save_every", type=int, default=50)
@@ -26,6 +28,12 @@ def main():
         args.model_path,
         dtype=torch.float16 if device == "cuda" else torch.float32,
     ).to(device)
+
+    if args.lora_path:
+        print(f"Loading LoRA from {args.lora_path} ...", flush=True)
+        model = PeftModel.from_pretrained(model, args.lora_path)
+        model = model.merge_and_unload()
+
     print("Model loaded.", flush=True)
 
     with open(args.input_jsonl, "r", encoding="utf-8") as f:
